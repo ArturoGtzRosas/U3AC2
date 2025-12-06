@@ -1,6 +1,6 @@
 ## Crear un nuevo repositorio público
 
-* Copien los archivos index.js, .gitignore y package.json a este nuevo repositorio.
+* Copien los archivos app.js, .gitignore y package.json a este nuevo repositorio.
 * Asegúrense de realizarlo en la rama main.
 
 ## Correr la aplicación 
@@ -12,7 +12,7 @@ Si se ha realizado satisfactoriamente la instalación, deberán ver una carpeta 
 
 Posteriormente, para correr la aplicación:
 ```
-node index.js
+node app.js
 ```
 
 La aplicación creará el archivo de base de datos "base.sqlite3", y CodeSpace preguntará si desean hacer público el puerto 3000. Respondan que sí.
