@@ -2,20 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 
-//Documentación en https://expressjs.com/en/starter/hello-world.html
-const app = express()
+const app = express();
+const jsonParser = bodyParser.json();
 
-//Creamos un parser de tipo application/json
-//Documentación en https://expressjs.com/en/resources/middleware/body-parser.html
-const jsonParser = bodyParser.json()
-
-// Abre la base de datos (Nota: Para tests reales, se suele usar ':memory:' o una DB de test)
 const db = new sqlite3.Database('./base.sqlite3', (err) => {
     if (err) {
         console.error(err.message);
     }
-    // console.log('Conectado a la base de datos SQLite.'); // Comentado para limpiar salida de tests
-
     db.run(`CREATE TABLE IF NOT EXISTS todos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         todo TEXT NOT NULL,
@@ -25,23 +18,30 @@ const db = new sqlite3.Database('./base.sqlite3', (err) => {
 
 // --- ENDPOINTS ---
 
+// INSERTAR TAREA
 app.post('/insert', jsonParser, function (req, res) {
     const { todo } = req.body;
-
     if (!todo) {
         return res.status(400).send({ error: 'Falta información necesaria' });
     }
-
     const stmt = db.prepare('INSERT INTO todos (todo, created_at) VALUES (?, CURRENT_TIMESTAMP)');
-
     stmt.run(todo, function(err) {
         if (err) {
             return res.status(500).send(err);
         }
-        // Usamos sendStatus o json para terminar correctamente
         res.status(201).json({ id: this.lastID, message: 'Insert was successful' });
     });
     stmt.finalize();
+});
+
+// LISTAR TAREAS (Agregado para cumplir con el requisito)
+app.get('/todos', function (req, res) {
+    db.all('SELECT * FROM todos', [], (err, rows) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        res.status(200).json(rows);
+    });
 });
 
 app.get('/', function (req, res) {
@@ -53,14 +53,12 @@ app.post('/login', jsonParser, function (req, res) {
 });
 
 // --- INICIO DEL SERVIDOR ---
-
-// Solo escuchamos el puerto si este archivo es el principal (no es un test)
 if (require.main === module) {
+    // La variable port configurada según el estándar de Render
     const port = process.env.PORT || 3000;
     app.listen(port, () => {
         console.log(`Aplicación corriendo en http://localhost:${port}`);
     });
 }
 
-// Exportamos app y db para usarlos en los tests
 module.exports = { app: app, db };
